@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
-    <title>CAT EMPIRE: ULTIMATE BEYOND</title>
+    <title>CAT EMPIRE: PC & MOBILE EDITION</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
@@ -23,7 +23,7 @@
         body {
             background: radial-gradient(circle at center, #1a1a2e 0%, #050505 100%);
             color: white;
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             margin: 0;
             height: 100vh;
             display: flex;
@@ -32,31 +32,19 @@
             user-select: none;
         }
 
-        /* Продвинутая шапка */
+        /* Шапка */
         .top-bar {
             padding: 20px;
             background: var(--glass);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            z-index: 10;
         }
 
-        .xp-bar-container {
-            grid-column: span 2;
-            height: 6px;
-            background: #333;
-            border-radius: 10px;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-
-        #xp-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--p-color), var(--accent));
-            transition: width 0.3s ease;
+        .balance-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .balance-main {
@@ -78,104 +66,92 @@
         }
 
         .main-object {
-            width: 250px;
-            height: 250px;
+            width: 250px; height: 250px;
             position: relative;
             cursor: pointer;
-            transition: transform 0.05s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.05s;
         }
 
-        .main-object:active {
-            transform: scale(0.92);
-        }
-
-        .object-glow {
-            position: absolute;
-            width: 100%; height: 100%;
-            background: var(--p-color);
-            border-radius: 50%;
-            filter: blur(60px);
-            opacity: 0.2;
-            animation: pulseGlow 3s infinite;
-        }
-
-        @keyframes pulseGlow {
-            0%, 100% { opacity: 0.2; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(1.2); }
-        }
+        .main-object:active { transform: scale(0.92); }
 
         .object-emoji {
             font-size: 150px;
             z-index: 2;
             position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* Магазин и Инвентарь */
+        /* Меню Навигации */
         .nav-menu {
             height: 80px;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.9);
             display: flex;
             justify-content: space-around;
             align-items: center;
-            padding-bottom: env(safe-area-inset-bottom);
+            border-top: 1px solid #333;
         }
 
         .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #666;
-            font-size: 10px;
-            transition: 0.3s;
+            cursor: pointer;
+            display: flex; flex-direction: column; align-items: center;
+            color: #666; font-size: 11px;
         }
 
         .nav-item.active { color: var(--p-color); }
+        .nav-icon { font-size: 24px; }
 
-        .nav-icon { font-size: 24px; margin-bottom: 4px; }
-
-        /* Всплывающее окно */
+        /* ОВЕРЛЕИ (Магазин и Скины) */
         .overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.85);
             backdrop-filter: blur(15px);
             z-index: 1000;
             display: none;
             flex-direction: column;
-            padding: 30px 20px;
-            animation: slideUp 0.4s ease-out;
+            animation: fadeIn 0.3s;
         }
 
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .overlay-content {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            height: 100%;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Кнопка Закрыть (Специально для ПК) */
+        .close-area-btn {
+            position: sticky;
+            top: 0;
+            align-self: flex-end;
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1100;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
         }
 
         .shop-card {
             background: rgba(255,255,255,0.05);
             border-radius: 20px;
             padding: 15px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             border: 1px solid rgba(255,255,255,0.1);
         }
 
-        .card-icon {
-            width: 50px; height: 50px;
-            background: #222;
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            margin-right: 15px;
-        }
-
-        .card-info { flex: 1; }
+        .card-info { flex: 1; margin-left: 15px; }
         .card-price { color: var(--p-color); font-weight: bold; }
 
         .buy-btn {
@@ -185,16 +161,18 @@
             padding: 10px 15px;
             border-radius: 10px;
             font-weight: bold;
+            cursor: pointer;
         }
 
-        .buy-btn:disabled { background: #444; color: #888; }
+        .buy-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
 
         /* Эффект частиц */
         .particle {
             position: absolute;
             pointer-events: none;
-            animation: particleOut 0.8s ease-out forwards;
-            font-size: 20px;
+            animation: particleOut 0.8s forwards;
+            font-size: 24px;
+            z-index: 100;
         }
 
         @keyframes particleOut {
@@ -203,25 +181,23 @@
         }
     </style>
 </head>
-<body>
+<body id="game-body">
 
 <div class="top-bar">
-    <div>
-        <div class="stats">БАЛАНС</div>
-        <div id="balance" class="balance-main">0</div>
-    </div>
-    <div style="text-align: right;">
-        <div class="stats">УРОВЕНЬ <span id="lvl-num">1</span></div>
-        <div id="per-sec-val" style="color: #00f2fe; font-size: 14px;">+0 /сек</div>
-    </div>
-    <div class="xp-bar-container">
-        <div id="xp-fill"></div>
+    <div class="balance-row">
+        <div>
+            <div style="font-size: 10px; color: #888;">COINS</div>
+            <div id="balance" class="balance-main">0</div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 10px; color: #888;">AUTO-INCOME</div>
+            <div id="per-sec-val" style="color: #00f2fe; font-size: 16px;">+0/s</div>
+        </div>
     </div>
 </div>
 
 <div class="click-container" id="tap-zone">
     <div class="main-object" id="object-trigger">
-        <div class="object-glow"></div>
         <div class="object-emoji animate__animated" id="main-emoji">🐱</div>
     </div>
 </div>
@@ -229,117 +205,84 @@
 <div class="nav-menu">
     <div class="nav-item active" onclick="closeAll()">
         <div class="nav-icon">🏠</div>
-        ГЛАВНАЯ
+        GAME
     </div>
     <div class="nav-item" onclick="openOverlay('shop')">
         <div class="nav-icon">⚡</div>
-        МАРКЕТ
+        SHOP
     </div>
     <div class="nav-item" onclick="openOverlay('skins')">
         <div class="nav-icon">🎭</div>
-        СКИНЫ
+        SKINS
     </div>
 </div>
 
-<div id="shop-overlay" class="overlay">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2>БУСТЕРЫ</h2>
-        <button onclick="closeAll()" style="background:none; border:none; color:white; font-size:24px;">✕</button>
+<div id="shop-overlay" class="overlay" onclick="handleOutsideClick(event)">
+    <div class="overlay-content">
+        <button class="close-area-btn" onclick="closeAll()">ЗАКРЫТЬ ✕</button>
+        <h2 style="margin-top:0">UPGRADES</h2>
+        <div id="shop-list"></div>
     </div>
-    <div id="shop-list"></div>
 </div>
 
-<div id="skins-overlay" class="overlay">
-    <h2>ТВОЙ ГЕРОЙ</h2>
-    <div id="skins-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;"></div>
-    <button onclick="closeAll()" class="buy-btn" style="margin-top: 20px; width: 100%;">НАЗАД</button>
+<div id="skins-overlay" class="overlay" onclick="handleOutsideClick(event)">
+    <div class="overlay-content">
+        <button class="close-area-btn" onclick="closeAll()">ЗАКРЫТЬ ✕</button>
+        <h2>CHOOSE HERO</h2>
+        <div id="skins-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;"></div>
+    </div>
 </div>
 
 <script>
     let tg = window.Telegram.WebApp;
     tg.expand();
-    tg.headerColor = '#050505';
 
-    // --- GAME STATE ---
-    let state = JSON.parse(localStorage.getItem('cat_empire_pro')) || {
+    let state = JSON.parse(localStorage.getItem('cat_empire_v3')) || {
         coins: 0,
-        totalTaps: 0,
-        level: 1,
-        xp: 0,
         clickPower: 1,
         income: 0,
         currentSkin: '🐱',
         upgrades: {
-            mouse: { level: 0, cost: 15, power: 1 },
-            farm: { level: 0, cost: 100, income: 5 },
-            mega: { level: 0, cost: 1000, income: 50 }
+            clicker: { level: 1, cost: 15, power: 1 },
+            bot: { level: 0, cost: 100, income: 2 }
         },
         skins: ['🐱']
     };
 
     const skinsLibrary = [
-        { char: '🐱', price: 0 },
-        { char: '🐹', price: 500 },
-        { char: '🦊', price: 2000 },
-        { char: '🦁', price: 10000 },
-        { char: '🐲', price: 50000 },
-        { char: '🦄', price: 200000 }
+        { char: '🐱', price: 0 }, { char: '🐹', price: 500 },
+        { char: '🦊', price: 2000 }, { char: '🦁', price: 10000 },
+        { char: '🐲', price: 50000 }, { char: '🦄', price: 100000 }
     ];
 
-    function save() {
-        localStorage.setItem('cat_empire_pro', JSON.stringify(state));
-    }
+    function save() { localStorage.setItem('cat_empire_v3', JSON.stringify(state)); }
 
-    // --- CORE LOGIC ---
-    const tapZone = document.getElementById('tap-zone');
-    const mainEmoji = document.getElementById('main-emoji');
-
-    tapZone.addEventListener('click', (e) => {
-        if (e.target.closest('.nav-menu') || e.target.closest('.overlay')) return;
-
+    // Клик
+    document.getElementById('tap-zone').onclick = (e) => {
         state.coins += state.clickPower;
-        state.xp += 1;
-        state.totalTaps++;
-
-        // Проверка уровня
-        let xpNeeded = state.level * 100;
-        if (state.xp >= xpNeeded) {
-            state.level++;
-            state.xp = 0;
-            tg.HapticFeedback.notificationOccurred('success');
-            mainEmoji.classList.add('animate__pulse');
-            setTimeout(() => mainEmoji.classList.remove('animate__pulse'), 500);
-        }
-
         spawnParticle(e.clientX, e.clientY);
         updateUI();
         save();
         tg.HapticFeedback.impactOccurred('medium');
-    });
+    };
 
     function spawnParticle(x, y) {
         const p = document.createElement('div');
         p.className = 'particle';
         p.innerText = state.currentSkin;
-        p.style.left = x + 'px';
-        p.style.top = y + 'px';
-        
+        p.style.left = x + 'px'; p.style.top = y + 'px';
         const tx = (Math.random() - 0.5) * 200;
         const ty = (Math.random() - 0.5) * 200 - 100;
         p.style.setProperty('--x', tx + 'px');
         p.style.setProperty('--y', ty + 'px');
-        
         document.body.appendChild(p);
         setTimeout(() => p.remove(), 800);
     }
 
-    // --- UI UPDATES ---
     function updateUI() {
         document.getElementById('balance').innerText = Math.floor(state.coins).toLocaleString();
-        document.getElementById('lvl-num').innerText = state.level;
-        document.getElementById('xp-fill').style.width = (state.xp / (state.level * 100) * 100) + '%';
-        document.getElementById('per-sec-val').innerText = `+${state.income} /сек`;
-        mainEmoji.innerText = state.currentSkin;
+        document.getElementById('per-sec-val').innerText = `+${state.income}/s`;
+        document.getElementById('main-emoji').innerText = state.currentSkin;
         renderShop();
         renderSkins();
     }
@@ -347,18 +290,17 @@
     function renderShop() {
         const list = document.getElementById('shop-list');
         list.innerHTML = '';
-        
         Object.keys(state.upgrades).forEach(key => {
             const up = state.upgrades[key];
             const div = document.createElement('div');
             div.className = 'shop-card';
             div.innerHTML = `
-                <div class="card-icon">${key === 'mouse' ? '🖱️' : '🏗️'}</div>
+                <div style="font-size:30px">${key === 'clicker' ? '🖱️' : '🤖'}</div>
                 <div class="card-info">
-                    <div style="font-weight:bold">${key.toUpperCase()} (Lvl ${up.level})</div>
-                    <div class="card-price">${up.cost} 💰</div>
+                    <b>${key.toUpperCase()} (LVL ${up.level})</b><br>
+                    <span class="card-price">COST: ${up.cost}</span>
                 </div>
-                <button class="buy-btn" ${state.coins < up.cost ? 'disabled' : ''} onclick="buy('${key}')">UP</button>
+                <button class="buy-btn" ${state.coins < up.cost ? 'disabled' : ''} onclick="buy('${key}')">BUY</button>
             `;
             list.appendChild(div);
         });
@@ -374,11 +316,9 @@
             div.style.flexDirection = 'column';
             div.innerHTML = `
                 <div style="font-size:40px">${s.char}</div>
-                <div style="margin:10px 0">${owned ? 'КУПЛЕНО' : s.price + ' 💰'}</div>
-                <button class="buy-btn" style="width:100%" 
-                    ${!owned && state.coins < s.price ? 'disabled' : ''} 
-                    onclick="skinAction('${s.char}', ${s.price})">
-                    ${owned ? (state.currentSkin === s.char ? 'АКТИВНО' : 'ВЫБРАТЬ') : 'КУПИТЬ'}
+                <div style="margin:10px 0">${owned ? 'OWNED' : s.price}</div>
+                <button class="buy-btn" style="width:100%" ${!owned && state.coins < s.price ? 'disabled' : ''} onclick="skinAction('${s.char}', ${s.price})">
+                    ${owned ? (state.currentSkin === s.char ? 'ACTIVE' : 'SELECT') : 'BUY'}
                 </button>
             `;
             list.appendChild(div);
@@ -390,28 +330,22 @@
         if (state.coins >= up.cost) {
             state.coins -= up.cost;
             up.level++;
-            if (key === 'mouse') state.clickPower += up.power;
+            if (key === 'clicker') state.clickPower += 1;
             else state.income += up.income;
-            up.cost = Math.floor(up.cost * 1.7);
+            up.cost = Math.floor(up.cost * 1.8);
             updateUI();
             save();
-            tg.HapticFeedback.impactOccurred('heavy');
         }
     }
 
     function skinAction(char, price) {
-        if (state.skins.includes(char)) {
-            state.currentSkin = char;
-        } else if (state.coins >= price) {
-            state.coins -= price;
-            state.skins.push(char);
-            state.currentSkin = char;
-        }
+        if (state.skins.includes(char)) { state.currentSkin = char; }
+        else if (state.coins >= price) { state.coins -= price; state.skins.push(char); state.currentSkin = char; }
         updateUI();
         save();
     }
 
-    // --- NAVIGATION ---
+    // НАВИГАЦИЯ
     function openOverlay(id) {
         document.getElementById(id + '-overlay').style.display = 'flex';
     }
@@ -420,7 +354,14 @@
         document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
     }
 
-    // --- PASSIVE INCOME ---
+    // Закрытие по клику вне контента
+    function handleOutsideClick(event) {
+        if (event.target.classList.contains('overlay')) {
+            closeAll();
+        }
+    }
+
+    // Авто-доход
     setInterval(() => {
         if (state.income > 0) {
             state.coins += state.income / 10;
@@ -430,5 +371,6 @@
 
     updateUI();
 </script>
+
 </body>
 </html>
