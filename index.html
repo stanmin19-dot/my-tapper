@@ -3,361 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
-    <title>Cat Tapper Empire Pro</title>
+    <title>Cat Empire: Save Edition</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --primary: #00f2fe;
             --secondary: #4facfe;
-            --accent: #f093fb;
             --bg: #0a0a0a;
         }
 
         body {
             background-color: var(--bg);
             color: white;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             margin: 0;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            height: 100vh;
             overflow: hidden;
-            /* ФИКС СИНЕГО ЭКРАНА И ВЫДЕЛЕНИЯ */
+            /* Убираем синеву и выделение */
             -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
             user-select: none;
             touch-action: manipulation;
         }
 
-        /* Верхняя панель */
         .header {
             width: 90%;
-            padding: 15px;
+            padding: 20px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.05);
             border-bottom: 2px solid var(--primary);
             border-radius: 0 0 20px 20px;
-            z-index: 5;
         }
 
-        .balance { font-size: 32px; font-weight: bold; color: var(--primary); text-shadow: 0 0 15px var(--primary); }
-        .stats { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .balance { font-size: 32px; font-weight: bold; color: var(--primary); }
 
-        /* Игровая зона */
         .game-area {
             flex: 1;
+            width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 100%;
             position: relative;
-        }
-
-        .cat-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            max-width: 80%;
-            pointer-events: none; /* Чтобы коты не мешали кликать */
         }
 
         .cat-icon {
             font-size: 60px;
-            filter: drop-shadow(0 0 10px var(--secondary));
             animation: bounce 2s infinite ease-in-out;
+            filter: drop-shadow(0 0 10px var(--secondary));
         }
 
         @keyframes bounce {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-15px) scale(1.05); }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
 
-        /* Ракета */
-        #rocket {
-            position: absolute;
-            font-size: 50px;
-            cursor: pointer;
-            display: none;
-            z-index: 100;
-            filter: drop-shadow(0 0 20px orange);
-            transition: transform 0.1s;
-        }
-
-        /* Кнопка магазина */
         .shop-btn {
             position: fixed;
             bottom: 30px;
-            padding: 18px 50px;
+            padding: 15px 45px;
             background: linear-gradient(45deg, var(--secondary), var(--primary));
             border: none;
             border-radius: 50px;
             color: white;
             font-weight: bold;
-            font-size: 20px;
-            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.5);
-            z-index: 1000; /* Самый верхний слой */
-            cursor: pointer;
-            text-transform: uppercase;
+            z-index: 1000;
         }
 
-        .shop-btn:active { transform: scale(0.95); }
-
-        /* Окно магазина */
         #shop-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95);
             display: none;
             flex-direction: column;
             align-items: center;
             z-index: 2000;
-            padding-top: 60px;
+            padding-top: 50px;
         }
 
         .shop-item {
-            width: 85%;
-            background: rgba(255,255,255,0.07);
-            margin: 12px 0;
-            padding: 20px;
-            border-radius: 20px;
+            width: 80%;
+            background: rgba(255,255,255,0.1);
+            margin: 10px;
+            padding: 15px;
+            border-radius: 15px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            border: 1px solid #444;
         }
 
-        .shop-item button {
-            background: var(--primary);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            color: black;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .turbo-badge {
-            position: fixed;
-            top: 110px;
-            background: #ff9f43;
-            color: black;
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-weight: bold;
-            display: none;
-            z-index: 10;
-            box-shadow: 0 0 20px rgba(255, 159, 67, 0.6);
-        }
-
-        /* Анимация клика */
+        /* Текст при клике */
         .tap-text {
             position: absolute;
             color: var(--primary);
             font-weight: bold;
             pointer-events: none;
-            animation: floatUp 0.6s ease-out forwards;
-            z-index: 200;
+            animation: moveUp 0.6s forwards;
         }
 
-        @keyframes floatUp {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-100px); opacity: 0; }
+        @keyframes moveUp {
+            to { transform: translateY(-100px); opacity: 0; }
         }
     </style>
 </head>
-<body id="body">
+<body>
 
     <div class="header">
         <div>
-            <div class="stats">Монеты</div>
+            <div style="font-size: 10px; color: #888;">КОИНЫ</div>
             <div class="balance" id="score">0</div>
         </div>
-        <div style="text-align: right;">
-            <div class="stats" id="per-second">Авто: 0/с</div>
-            <div class="stats" id="per-click">Клик: 1</div>
+        <div style="text-align: right">
+            <div id="per-click" style="font-size: 12px;">Клик: 1</div>
+            <div id="per-second" style="font-size: 12px;">Авто: 0/с</div>
         </div>
     </div>
 
-    <div class="turbo-badge" id="turbo-ui">🔥 TURBO MODE X2</div>
-
-    <div class="game-area" id="game-click-zone">
-        <div class="cat-container" id="cat-display">
+    <div class="game-area" id="click-zone">
+        <div id="cat-display" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
             <div class="cat-icon">🐱</div>
         </div>
-        <div id="rocket">🚀</div>
     </div>
 
-    <button class="shop-btn" onclick="toggleShop()">Магазин 🛒</button>
+    <button class="shop-btn" onclick="toggleShop()">МАГАЗИН</button>
 
     <div id="shop-overlay">
-        <h1 style="color: var(--primary)">УЛУЧШЕНИЯ</h1>
+        <h1>МАГАЗИН</h1>
         <div class="shop-item">
-            <div>
-                <b>Умножитель (Клик)</b><br>
-                <small id="cost-click" style="color: #00f2fe;">Цена: 10</small>
-            </div>
-            <button onclick="buyUpgrade('click')">КУПИТЬ</button>
+            <div><b>Сила клика</b><br><small id="c-cost">Цена: 10</small></div>
+            <button onclick="buy('click')">КУПИТЬ</button>
         </div>
         <div class="shop-item">
-            <div>
-                <b>Авто-ферма (Секунда)</b><br>
-                <small id="cost-auto" style="color: #00f2fe;">Цена: 50</small>
-            </div>
-            <button onclick="buyUpgrade('auto')">КУПИТЬ</button>
+            <div><b>Авто-бот</b><br><small id="a-cost">Цена: 50</small></div>
+            <button onclick="buy('auto')">КУПИТЬ</button>
         </div>
-        <button class="shop-btn" style="position: static; margin-top: 40px; background: #333;" onclick="toggleShop()">ЗАКРЫТЬ</button>
+        <button class="shop-btn" style="position: static; margin-top: 20px;" onclick="toggleShop()">ЗАКРЫТЬ</button>
+        <button onclick="resetGame()" style="margin-top: 50px; background: none; border: 1px solid red; color: red; padding: 5px;">СБРОСИТЬ ПРОГРЕСС</button>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ЗАГРУЗКА ДАННЫХ ИЛИ СТАРТ С НУЛЯ
-        let savedData = JSON.parse(localStorage.getItem('catClickerSave')) || {
+        // --- ЛОГИКА СОХРАНЕНИЯ ---
+        let rawData = localStorage.getItem('myTapperData');
+        let data = rawData ? JSON.parse(rawData) : {
             score: 0,
             clickPower: 1,
             autoIncome: 0,
             costs: { click: 10, auto: 50 }
         };
 
-        let state = {
-            ...savedData,
-            isTurbo: false
-        };
-
-        // Сохранение функции
-        function saveGame() {
-            localStorage.setItem('catClickerSave', JSON.stringify({
-                score: state.score,
-                clickPower: state.clickPower,
-                autoIncome: state.autoIncome,
-                costs: state.costs
-            }));
+        function save() {
+            localStorage.setItem('myTapperData', JSON.stringify(data));
         }
 
-        // Клик по экрану
-        document.getElementById('game-click-zone').onclick = (e) => {
-            if(e.target.id === 'rocket') return;
-            
-            let power = state.isTurbo ? state.clickPower * 2 : state.clickPower;
-            state.score += power;
-            
-            updateUI();
-            tg.HapticFeedback.impactOccurred('medium');
-            showTapText(e.clientX, e.clientY, `+${power}`);
-            saveGame();
-        };
-
-        function buyUpgrade(type) {
-            if (state.score >= state.costs[type]) {
-                state.score -= state.costs[type];
-                if (type === 'click') {
-                    state.clickPower++;
-                    state.costs.click = Math.floor(state.costs.click * 2.1);
-                    updateCats();
-                } else {
-                    state.autoIncome += 1;
-                    state.costs.auto = Math.floor(state.costs.auto * 1.7);
-                }
-                updateUI();
-                saveGame();
-                tg.HapticFeedback.notificationOccurred('success');
+        function resetGame() {
+            if(confirm("Реально хочешь всё удалить?")) {
+                localStorage.removeItem('myTapperData');
+                location.reload();
             }
         }
+        // -------------------------
 
         function updateUI() {
-            document.getElementById('score').innerText = Math.floor(state.score);
-            document.getElementById('per-click').innerText = `Клик: ${state.clickPower}`;
-            document.getElementById('per-second').innerText = `Авто: ${state.autoIncome}/с`;
-            document.getElementById('cost-click').innerText = `Цена: ${state.costs.click}`;
-            document.getElementById('cost-auto').innerText = `Цена: ${state.costs.auto}`;
-        }
-
-        function updateCats() {
+            document.getElementById('score').innerText = Math.floor(data.score);
+            document.getElementById('per-click').innerText = "Клик: " + data.clickPower;
+            document.getElementById('per-second').innerText = "Авто: " + data.autoIncome + "/с";
+            document.getElementById('c-cost').innerText = "Цена: " + data.costs.click;
+            document.getElementById('a-cost').innerText = "Цена: " + data.costs.auto;
+            
+            // Обновляем визуально котов
             const container = document.getElementById('cat-display');
             container.innerHTML = '';
-            // Рисуем котиков (не больше 15, чтобы не лагало)
-            let count = Math.min(state.clickPower, 15);
-            for(let i=0; i < count; i++) {
-                const div = document.createElement('div');
-                div.className = 'cat-icon';
-                div.innerText = '🐱';
-                container.appendChild(div);
+            for(let i=0; i < Math.min(data.clickPower, 20); i++) {
+                container.innerHTML += '<div class="cat-icon">🐱</div>';
             }
         }
 
-        // Пассивный доход каждые 100мс
-        setInterval(() => {
-            if (state.autoIncome > 0) {
-                state.score += state.autoIncome / 10;
-                updateUI();
-                if (Math.random() > 0.95) saveGame(); // Сохраняем редко, чтобы не грузить телефон
-            }
-        }, 100);
+        document.getElementById('click-zone').onclick = (e) => {
+            data.score += data.clickPower;
+            updateUI();
+            save();
+            tg.HapticFeedback.impactOccurred('light');
+            
+            // Текст при клике
+            let txt = document.createElement('div');
+            txt.className = 'tap-text';
+            txt.innerText = "+" + data.clickPower;
+            txt.style.left = e.clientX + "px";
+            txt.style.top = e.clientY + "px";
+            document.body.appendChild(txt);
+            setTimeout(() => txt.remove(), 600);
+        };
 
-        // Появление ракеты
-        function spawnRocket() {
-            const rocket = document.getElementById('rocket');
-            const startX = Math.random() * (window.innerWidth - 50);
-            rocket.style.left = startX + 'px';
-            rocket.style.top = '-60px';
-            rocket.style.display = 'block';
-
-            let pos = -60;
-            let moveId = setInterval(() => {
-                if (pos > window.innerHeight) {
-                    clearInterval(moveId);
-                    rocket.style.display = 'none';
+        function buy(type) {
+            if(data.score >= data.costs[type]) {
+                data.score -= data.costs[type];
+                if(type === 'click') {
+                    data.clickPower++;
+                    data.costs.click = Math.floor(data.costs.click * 2);
                 } else {
-                    pos += 4;
-                    rocket.style.top = pos + 'px';
+                    data.autoIncome++;
+                    data.costs.auto = Math.floor(data.costs.auto * 1.8);
                 }
-            }, 20);
-
-            rocket.onclick = (e) => {
-                e.stopPropagation();
-                state.isTurbo = true;
-                rocket.style.display = 'none';
-                clearInterval(moveId);
-                document.getElementById('turbo-ui').style.display = 'block';
-                tg.HapticFeedback.notificationOccurred('warning');
-                
-                setTimeout(() => {
-                    state.isTurbo = false;
-                    document.getElementById('turbo-ui').style.display = 'none';
-                }, 25000);
-            };
+                updateUI();
+                save();
+            }
         }
-
-        setInterval(() => {
-            if(Math.random() > 0.6) spawnRocket();
-        }, 20000);
 
         function toggleShop() {
-            const shop = document.getElementById('shop-overlay');
-            const isVisible = shop.style.display === 'flex';
-            shop.style.display = isVisible ? 'none' : 'flex';
-            tg.HapticFeedback.impactOccurred('light');
+            let s = document.getElementById('shop-overlay');
+            s.style.display = s.style.display === 'flex' ? 'none' : 'flex';
         }
 
-        function showTapText(x, y, text) {
-            const el = document.createElement('div');
-            el.className = 'tap-text';
-            el.innerText = text;
-            el.style.left = (x - 10) + 'px';
-            el.style.top = (y - 20) + 'px';
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 600);
-        }
+        // Пассивный доход
+        setInterval(() => {
+            if(data.autoIncome > 0) {
+                data.score += data.autoIncome;
+                updateUI();
+                save();
+            }
+        }, 1000);
 
-        // Запуск начальных функций
-        updateUI();
-        updateCats();
+        updateUI(); // Загрузить данные при старте
     </script>
 </body>
 </html>
