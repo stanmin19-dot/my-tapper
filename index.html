@@ -3,231 +3,432 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
-    <title>Cat Empire: Save Edition</title>
+    <title>CAT EMPIRE: ULTIMATE BEYOND</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
         :root {
-            --primary: #00f2fe;
-            --secondary: #4facfe;
-            --bg: #0a0a0a;
+            --p-color: #00f2fe;
+            --s-color: #4facfe;
+            --accent: #f093fb;
+            --bg-dark: #050505;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: var(--bg);
+            background: radial-gradient(circle at center, #1a1a2e 0%, #050505 100%);
             color: white;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             margin: 0;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
             overflow: hidden;
-            /* Убираем синеву и выделение */
-            -webkit-tap-highlight-color: transparent;
             user-select: none;
-            touch-action: manipulation;
         }
 
-        .header {
-            width: 90%;
+        /* Продвинутая шапка */
+        .top-bar {
             padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            background: rgba(255,255,255,0.05);
-            border-bottom: 2px solid var(--primary);
-            border-radius: 0 0 20px 20px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
         }
 
-        .balance { font-size: 32px; font-weight: bold; color: var(--primary); }
+        .xp-bar-container {
+            grid-column: span 2;
+            height: 6px;
+            background: #333;
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
 
-        .game-area {
+        #xp-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--p-color), var(--accent));
+            transition: width 0.3s ease;
+        }
+
+        .balance-main {
+            font-size: 36px;
+            font-weight: 900;
+            background: linear-gradient(to bottom, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(0,242,254,0.5));
+        }
+
+        /* Зона клика */
+        .click-container {
             flex: 1;
-            width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
         }
 
-        .cat-icon {
-            font-size: 60px;
-            animation: bounce 2s infinite ease-in-out;
-            filter: drop-shadow(0 0 10px var(--secondary));
+        .main-object {
+            width: 250px;
+            height: 250px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.05s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+        .main-object:active {
+            transform: scale(0.92);
         }
 
-        .shop-btn {
-            position: fixed;
-            bottom: 30px;
-            padding: 15px 45px;
-            background: linear-gradient(45deg, var(--secondary), var(--primary));
-            border: none;
-            border-radius: 50px;
-            color: white;
-            font-weight: bold;
-            z-index: 1000;
+        .object-glow {
+            position: absolute;
+            width: 100%; height: 100%;
+            background: var(--p-color);
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.2;
+            animation: pulseGlow 3s infinite;
         }
 
-        #shop-overlay {
-            position: fixed;
-            top: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            display: none;
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.2); }
+        }
+
+        .object-emoji {
+            font-size: 150px;
+            z-index: 2;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Магазин и Инвентарь */
+        .nav-menu {
+            height: 80px;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-item {
+            display: flex;
             flex-direction: column;
             align-items: center;
-            z-index: 2000;
-            padding-top: 50px;
+            color: #666;
+            font-size: 10px;
+            transition: 0.3s;
         }
 
-        .shop-item {
-            width: 80%;
-            background: rgba(255,255,255,0.1);
-            margin: 10px;
+        .nav-item.active { color: var(--p-color); }
+
+        .nav-icon { font-size: 24px; margin-bottom: 4px; }
+
+        /* Всплывающее окно */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            padding: 30px 20px;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .shop-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
             padding: 15px;
-            border-radius: 15px;
+            margin-bottom: 15px;
             display: flex;
-            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* Текст при клике */
-        .tap-text {
-            position: absolute;
-            color: var(--primary);
+        .card-icon {
+            width: 50px; height: 50px;
+            background: #222;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        .card-info { flex: 1; }
+        .card-price { color: var(--p-color); font-weight: bold; }
+
+        .buy-btn {
+            background: var(--p-color);
+            color: black;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
             font-weight: bold;
-            pointer-events: none;
-            animation: moveUp 0.6s forwards;
         }
 
-        @keyframes moveUp {
-            to { transform: translateY(-100px); opacity: 0; }
+        .buy-btn:disabled { background: #444; color: #888; }
+
+        /* Эффект частиц */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            animation: particleOut 0.8s ease-out forwards;
+            font-size: 20px;
+        }
+
+        @keyframes particleOut {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div>
-            <div style="font-size: 10px; color: #888;">КОИНЫ</div>
-            <div class="balance" id="score">0</div>
-        </div>
-        <div style="text-align: right">
-            <div id="per-click" style="font-size: 12px;">Клик: 1</div>
-            <div id="per-second" style="font-size: 12px;">Авто: 0/с</div>
-        </div>
+<div class="top-bar">
+    <div>
+        <div class="stats">БАЛАНС</div>
+        <div id="balance" class="balance-main">0</div>
     </div>
-
-    <div class="game-area" id="click-zone">
-        <div id="cat-display" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-            <div class="cat-icon">🐱</div>
-        </div>
+    <div style="text-align: right;">
+        <div class="stats">УРОВЕНЬ <span id="lvl-num">1</span></div>
+        <div id="per-sec-val" style="color: #00f2fe; font-size: 14px;">+0 /сек</div>
     </div>
-
-    <button class="shop-btn" onclick="toggleShop()">МАГАЗИН</button>
-
-    <div id="shop-overlay">
-        <h1>МАГАЗИН</h1>
-        <div class="shop-item">
-            <div><b>Сила клика</b><br><small id="c-cost">Цена: 10</small></div>
-            <button onclick="buy('click')">КУПИТЬ</button>
-        </div>
-        <div class="shop-item">
-            <div><b>Авто-бот</b><br><small id="a-cost">Цена: 50</small></div>
-            <button onclick="buy('auto')">КУПИТЬ</button>
-        </div>
-        <button class="shop-btn" style="position: static; margin-top: 20px;" onclick="toggleShop()">ЗАКРЫТЬ</button>
-        <button onclick="resetGame()" style="margin-top: 50px; background: none; border: 1px solid red; color: red; padding: 5px;">СБРОСИТЬ ПРОГРЕСС</button>
+    <div class="xp-bar-container">
+        <div id="xp-fill"></div>
     </div>
+</div>
 
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand();
+<div class="click-container" id="tap-zone">
+    <div class="main-object" id="object-trigger">
+        <div class="object-glow"></div>
+        <div class="object-emoji animate__animated" id="main-emoji">🐱</div>
+    </div>
+</div>
 
-        // --- ЛОГИКА СОХРАНЕНИЯ ---
-        let rawData = localStorage.getItem('myTapperData');
-        let data = rawData ? JSON.parse(rawData) : {
-            score: 0,
-            clickPower: 1,
-            autoIncome: 0,
-            costs: { click: 10, auto: 50 }
-        };
+<div class="nav-menu">
+    <div class="nav-item active" onclick="closeAll()">
+        <div class="nav-icon">🏠</div>
+        ГЛАВНАЯ
+    </div>
+    <div class="nav-item" onclick="openOverlay('shop')">
+        <div class="nav-icon">⚡</div>
+        МАРКЕТ
+    </div>
+    <div class="nav-item" onclick="openOverlay('skins')">
+        <div class="nav-icon">🎭</div>
+        СКИНЫ
+    </div>
+</div>
 
-        function save() {
-            localStorage.setItem('myTapperData', JSON.stringify(data));
+<div id="shop-overlay" class="overlay">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>БУСТЕРЫ</h2>
+        <button onclick="closeAll()" style="background:none; border:none; color:white; font-size:24px;">✕</button>
+    </div>
+    <div id="shop-list"></div>
+</div>
+
+<div id="skins-overlay" class="overlay">
+    <h2>ТВОЙ ГЕРОЙ</h2>
+    <div id="skins-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;"></div>
+    <button onclick="closeAll()" class="buy-btn" style="margin-top: 20px; width: 100%;">НАЗАД</button>
+</div>
+
+<script>
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.headerColor = '#050505';
+
+    // --- GAME STATE ---
+    let state = JSON.parse(localStorage.getItem('cat_empire_pro')) || {
+        coins: 0,
+        totalTaps: 0,
+        level: 1,
+        xp: 0,
+        clickPower: 1,
+        income: 0,
+        currentSkin: '🐱',
+        upgrades: {
+            mouse: { level: 0, cost: 15, power: 1 },
+            farm: { level: 0, cost: 100, income: 5 },
+            mega: { level: 0, cost: 1000, income: 50 }
+        },
+        skins: ['🐱']
+    };
+
+    const skinsLibrary = [
+        { char: '🐱', price: 0 },
+        { char: '🐹', price: 500 },
+        { char: '🦊', price: 2000 },
+        { char: '🦁', price: 10000 },
+        { char: '🐲', price: 50000 },
+        { char: '🦄', price: 200000 }
+    ];
+
+    function save() {
+        localStorage.setItem('cat_empire_pro', JSON.stringify(state));
+    }
+
+    // --- CORE LOGIC ---
+    const tapZone = document.getElementById('tap-zone');
+    const mainEmoji = document.getElementById('main-emoji');
+
+    tapZone.addEventListener('click', (e) => {
+        if (e.target.closest('.nav-menu') || e.target.closest('.overlay')) return;
+
+        state.coins += state.clickPower;
+        state.xp += 1;
+        state.totalTaps++;
+
+        // Проверка уровня
+        let xpNeeded = state.level * 100;
+        if (state.xp >= xpNeeded) {
+            state.level++;
+            state.xp = 0;
+            tg.HapticFeedback.notificationOccurred('success');
+            mainEmoji.classList.add('animate__pulse');
+            setTimeout(() => mainEmoji.classList.remove('animate__pulse'), 500);
         }
 
-        function resetGame() {
-            if(confirm("Реально хочешь всё удалить?")) {
-                localStorage.removeItem('myTapperData');
-                location.reload();
-            }
-        }
-        // -------------------------
+        spawnParticle(e.clientX, e.clientY);
+        updateUI();
+        save();
+        tg.HapticFeedback.impactOccurred('medium');
+    });
 
-        function updateUI() {
-            document.getElementById('score').innerText = Math.floor(data.score);
-            document.getElementById('per-click').innerText = "Клик: " + data.clickPower;
-            document.getElementById('per-second').innerText = "Авто: " + data.autoIncome + "/с";
-            document.getElementById('c-cost').innerText = "Цена: " + data.costs.click;
-            document.getElementById('a-cost').innerText = "Цена: " + data.costs.auto;
-            
-            // Обновляем визуально котов
-            const container = document.getElementById('cat-display');
-            container.innerHTML = '';
-            for(let i=0; i < Math.min(data.clickPower, 20); i++) {
-                container.innerHTML += '<div class="cat-icon">🐱</div>';
-            }
-        }
+    function spawnParticle(x, y) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.innerText = state.currentSkin;
+        p.style.left = x + 'px';
+        p.style.top = y + 'px';
+        
+        const tx = (Math.random() - 0.5) * 200;
+        const ty = (Math.random() - 0.5) * 200 - 100;
+        p.style.setProperty('--x', tx + 'px');
+        p.style.setProperty('--y', ty + 'px');
+        
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 800);
+    }
 
-        document.getElementById('click-zone').onclick = (e) => {
-            data.score += data.clickPower;
+    // --- UI UPDATES ---
+    function updateUI() {
+        document.getElementById('balance').innerText = Math.floor(state.coins).toLocaleString();
+        document.getElementById('lvl-num').innerText = state.level;
+        document.getElementById('xp-fill').style.width = (state.xp / (state.level * 100) * 100) + '%';
+        document.getElementById('per-sec-val').innerText = `+${state.income} /сек`;
+        mainEmoji.innerText = state.currentSkin;
+        renderShop();
+        renderSkins();
+    }
+
+    function renderShop() {
+        const list = document.getElementById('shop-list');
+        list.innerHTML = '';
+        
+        Object.keys(state.upgrades).forEach(key => {
+            const up = state.upgrades[key];
+            const div = document.createElement('div');
+            div.className = 'shop-card';
+            div.innerHTML = `
+                <div class="card-icon">${key === 'mouse' ? '🖱️' : '🏗️'}</div>
+                <div class="card-info">
+                    <div style="font-weight:bold">${key.toUpperCase()} (Lvl ${up.level})</div>
+                    <div class="card-price">${up.cost} 💰</div>
+                </div>
+                <button class="buy-btn" ${state.coins < up.cost ? 'disabled' : ''} onclick="buy('${key}')">UP</button>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function renderSkins() {
+        const list = document.getElementById('skins-list');
+        list.innerHTML = '';
+        skinsLibrary.forEach(s => {
+            const owned = state.skins.includes(s.char);
+            const div = document.createElement('div');
+            div.className = 'shop-card';
+            div.style.flexDirection = 'column';
+            div.innerHTML = `
+                <div style="font-size:40px">${s.char}</div>
+                <div style="margin:10px 0">${owned ? 'КУПЛЕНО' : s.price + ' 💰'}</div>
+                <button class="buy-btn" style="width:100%" 
+                    ${!owned && state.coins < s.price ? 'disabled' : ''} 
+                    onclick="skinAction('${s.char}', ${s.price})">
+                    ${owned ? (state.currentSkin === s.char ? 'АКТИВНО' : 'ВЫБРАТЬ') : 'КУПИТЬ'}
+                </button>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function buy(key) {
+        const up = state.upgrades[key];
+        if (state.coins >= up.cost) {
+            state.coins -= up.cost;
+            up.level++;
+            if (key === 'mouse') state.clickPower += up.power;
+            else state.income += up.income;
+            up.cost = Math.floor(up.cost * 1.7);
             updateUI();
             save();
-            tg.HapticFeedback.impactOccurred('light');
-            
-            // Текст при клике
-            let txt = document.createElement('div');
-            txt.className = 'tap-text';
-            txt.innerText = "+" + data.clickPower;
-            txt.style.left = e.clientX + "px";
-            txt.style.top = e.clientY + "px";
-            document.body.appendChild(txt);
-            setTimeout(() => txt.remove(), 600);
-        };
-
-        function buy(type) {
-            if(data.score >= data.costs[type]) {
-                data.score -= data.costs[type];
-                if(type === 'click') {
-                    data.clickPower++;
-                    data.costs.click = Math.floor(data.costs.click * 2);
-                } else {
-                    data.autoIncome++;
-                    data.costs.auto = Math.floor(data.costs.auto * 1.8);
-                }
-                updateUI();
-                save();
-            }
+            tg.HapticFeedback.impactOccurred('heavy');
         }
+    }
 
-        function toggleShop() {
-            let s = document.getElementById('shop-overlay');
-            s.style.display = s.style.display === 'flex' ? 'none' : 'flex';
+    function skinAction(char, price) {
+        if (state.skins.includes(char)) {
+            state.currentSkin = char;
+        } else if (state.coins >= price) {
+            state.coins -= price;
+            state.skins.push(char);
+            state.currentSkin = char;
         }
+        updateUI();
+        save();
+    }
 
-        // Пассивный доход
-        setInterval(() => {
-            if(data.autoIncome > 0) {
-                data.score += data.autoIncome;
-                updateUI();
-                save();
-            }
-        }, 1000);
+    // --- NAVIGATION ---
+    function openOverlay(id) {
+        document.getElementById(id + '-overlay').style.display = 'flex';
+    }
 
-        updateUI(); // Загрузить данные при старте
-    </script>
+    function closeAll() {
+        document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
+    }
+
+    // --- PASSIVE INCOME ---
+    setInterval(() => {
+        if (state.income > 0) {
+            state.coins += state.income / 10;
+            updateUI();
+        }
+    }, 100);
+
+    updateUI();
+</script>
 </body>
 </html>
